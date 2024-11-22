@@ -12,6 +12,7 @@ struct LoginView: View {
     @Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
         
     @ObservedObject var viewModel: AuthViewModel
+    @EnvironmentObject var appRouter: AppRouter
     
     @State private var showAlert: Bool = false
     @State private var needToNavigate: Bool = false
@@ -70,14 +71,10 @@ struct LoginView: View {
                 
                 switch state {
                 case .loginSuccessful:
-                    needToNavigate = true
+                    appRouter.navigate(.main(message: viewModel.login))
                 case .loginFailed:
                     showAlert = true
                 }
-            }
-            .navigationDestination(isPresented: $needToNavigate) {
-                MainScreenView(message: viewModel.login)
-                    .navigationBarBackButtonHidden()
             }
             .alert(isPresented: $showAlert) {
                 Alert(

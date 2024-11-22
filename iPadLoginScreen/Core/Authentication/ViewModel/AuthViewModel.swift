@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 @MainActor
-final class AuthViewModel: ObservableObject {
+final class AuthViewModel: ObservableObject, ViewModelable {
     @Published var viewState: ViewState?
     @Published var login: String = ""
     @Published var password: String = ""
