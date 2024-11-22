@@ -10,32 +10,59 @@ import SwiftUI
 
 enum AppRoute {
     case login(_ viewModel: AuthViewModel)
-    case main(_ message: String)
+    case main(_ viewModel: MainViewModel)
+    
+    func isEqual(_ route: AppRouteLight) -> Bool {
+        switch (self, route) {
+        case (.login, .login):
+            return true
+        case (.main, .main):
+            return true
+        case (_, _):
+            return false
+        }
+    }
 }
 
 enum AppRouteLight {
     case login
-    case main(message: String?)
+    case main
 }
 
 @MainActor
 class AppRouter: ObservableObject {
-    @Published var appRoute: AppRoute?
-    private var factory: ViewModelFactory
+    @Published var appRoute: AppRoute!
+    private var currentRoute: AppRoute!
     
-    init(factory: ViewModelFactory) {
+    private let factory: ViewModelFactory
+    private let appStorageManager: AppStorageService
+    
+    init(factory: ViewModelFactory, appStorageManager: AppStorageService) {
         self.factory = factory
+        self.appStorageManager = appStorageManager
         
         initialize()
     }
     
-    func initialize() {
-        if AppStorage.isUserAuthenticated {
-            let message = AppStorage.username
-            appRoute = .main(message)
-        } else {
-            let authViewModel = createAuthViewModel()
-            appRoute = .login(authViewModel)
+    private func initialize() {
+        switch appStorageManager.isUserAuthenticated() {
+        case (true):
+            self.appRoute = createRoute(.main)
+        case (false):
+            self.appRoute = createRoute(.login)
+        }
+        
+        currentRoute = appRoute
+    }
+    
+    func navigate(_ appRoute: AppRouteLight) {
+        guard !currentRoute.isEqual(appRoute) else { return }
+        
+        switch appRoute {
+        case .login:
+            self.appRoute = createRoute(.login)
+        case .main:
+            self.appRoute = createRoute(.main)
         }
     }
     
@@ -45,19 +72,27 @@ class AppRouter: ObservableObject {
         
         return authViewModel
     }
- 
-    func navigate(_ appRoute: AppRouteLight) {
-        switch appRoute {
+    
+    private func createMainViewModel() -> MainViewModel {
+        let viewModel = factory.create(viewModel: .main)
+        let mainViewModel = viewModel as! MainViewModel
+        
+        return mainViewModel
+    }
+    
+    private func createRoute(_ route: AppRouteLight) -> AppRoute {
+        let appRout: AppRoute
+        switch route {
         case .login:
             let authViewModel = createAuthViewModel()
-            self.appRoute = .login(authViewModel)
-        case .main(let message):
-            if let message {
-                self.appRoute = .main(message)
-            } else {
-                self.appRoute = .main(AppStorage.username)
-            }
+            appRout = .login(authViewModel)
+        case .main:
+            let mainViewModel = createMainViewModel()
+            appRout = .main(mainViewModel)
         }
+        
+        currentRoute = appRout
+        return appRout
     }
 }
 
@@ -67,18 +102,18 @@ protocol ViewModelable {}
 class ViewModelFactory {
     enum ViewModel {
         case authentication
+        case main
     }
+    
+    lazy var networkManager = NetworkManager()
+    lazy var appStorageManager = AppStorageManager()
         
     func create(viewModel: ViewModel) -> ViewModelable {
         switch viewModel {
         case .authentication:
-            let networkService = NetworkManager()
-            return AuthViewModel(networkService: networkService)
+            return AuthViewModel(networkService: networkManager, appStorageService: appStorageManager)
+        case .main:
+            return MainViewModel(appStorageService: appStorageManager)
         }
     }
-}
-
-struct AppStorage {
-    static var username: String = "Admin"
-    static var isUserAuthenticated: Bool = true
 }

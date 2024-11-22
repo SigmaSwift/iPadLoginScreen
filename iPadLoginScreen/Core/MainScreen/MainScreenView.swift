@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct MainScreenView: View {
-    let message: String
+    @ObservedObject var viewModel: MainViewModel
     
     var body: some View {
         HStack {
             Text("Welcome")
-            Text("\(message) !")
+            Text("\(viewModel.username) !")
                 .bold()
                 .foregroundStyle(.blue)
         }
@@ -21,5 +21,5 @@ struct MainScreenView: View {
 }
 
 #Preview {
-    MainScreenView(message: "User")
+    MainScreenView(viewModel: .init(appStorageService: AppStorageManager()))
 }

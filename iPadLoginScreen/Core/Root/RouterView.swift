@@ -16,8 +16,8 @@ struct RouterView: View {
                 switch appRoute {
                 case .login(let viewModel):
                     LoginView(viewModel: viewModel)
-                case .main(let message):
-                    MainScreenView(message: message)
+                case .main(let viewModel):
+                    MainScreenView(viewModel: viewModel)
                 }
             }
         }

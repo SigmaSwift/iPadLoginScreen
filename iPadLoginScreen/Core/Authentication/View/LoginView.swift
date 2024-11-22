@@ -15,7 +15,6 @@ struct LoginView: View {
     @EnvironmentObject var appRouter: AppRouter
     
     @State private var showAlert: Bool = false
-    @State private var needToNavigate: Bool = false
     
     private var isIPad: Bool {
         switch (horizontalSizeClass, verticalSizeClass) {
@@ -71,7 +70,7 @@ struct LoginView: View {
                 
                 switch state {
                 case .loginSuccessful:
-                    appRouter.navigate(.main(message: viewModel.login))
+                    appRouter.navigate(.main)
                 case .loginFailed:
                     showAlert = true
                 }
@@ -88,7 +87,10 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView(viewModel: .init(networkService: NetworkManager()))
+    LoginView(viewModel: .init(
+        networkService: NetworkManager(),
+        appStorageService: AppStorageManager()
+    ))
 }
 
 // It should be moved to a separate file

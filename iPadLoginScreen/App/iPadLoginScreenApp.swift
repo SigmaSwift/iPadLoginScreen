@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct iPadLoginScreenApp: App {
-    @StateObject private var appRouter: AppRouter = AppRouter(factory: ViewModelFactory())
+    @StateObject private var appRouter: AppRouter = AppRouter(factory: ViewModelFactory(), appStorageManager: AppStorageManager())
     
     var body: some Scene {
         WindowGroup {
