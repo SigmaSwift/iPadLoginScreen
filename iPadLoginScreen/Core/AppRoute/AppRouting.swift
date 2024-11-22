@@ -20,29 +20,37 @@ enum AppRouteLight {
 
 @MainActor
 class AppRouter: ObservableObject {
-    @Published var appRoute: AppRoute!
+    @Published var appRoute: AppRoute?
     private var factory: ViewModelFactory
     
     init(factory: ViewModelFactory) {
         self.factory = factory
         
+        initialize()
+    }
+    
+    func initialize() {
         if AppStorage.isUserAuthenticated {
-            navigate(.main(message: nil))
+            let message = AppStorage.username
+            appRoute = .main(message)
         } else {
-            navigate(.login)
+            let authViewModel = createAuthViewModel()
+            appRoute = .login(authViewModel)
         }
+    }
+    
+    private func createAuthViewModel() -> AuthViewModel {
+        let viewModel = factory.create(viewModel: .authentication)
+        let authViewModel = viewModel as! AuthViewModel
+        
+        return authViewModel
     }
  
     func navigate(_ appRoute: AppRouteLight) {
         switch appRoute {
         case .login:
-            let viewModel = factory.create(viewModel: .authentication)
-            
-            if let authViewModel = viewModel as? AuthViewModel {
-                self.appRoute = .login(authViewModel)
-            } else {
-                fatalError("AuthViewModel not initialized!")
-            }
+            let authViewModel = createAuthViewModel()
+            self.appRoute = .login(authViewModel)
         case .main(let message):
             if let message {
                 self.appRoute = .main(message)
@@ -72,5 +80,5 @@ class ViewModelFactory {
 
 struct AppStorage {
     static var username: String = "Admin"
-    static var isUserAuthenticated: Bool = false
+    static var isUserAuthenticated: Bool = true
 }

@@ -19,9 +19,6 @@ struct RouterView: View {
                 case .main(let message):
                     MainScreenView(message: message)
                 }
-            } else {
-                // need to remove after refactoring // never execute
-                EmptyView()
             }
         }
     }
