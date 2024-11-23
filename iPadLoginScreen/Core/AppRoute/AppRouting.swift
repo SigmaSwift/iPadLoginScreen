@@ -11,17 +11,6 @@ import SwiftUI
 enum AppRoute {
     case login(_ viewModel: AuthViewModel)
     case main(_ viewModel: MainViewModel)
-    
-    func isEqual(_ route: AppRouteLight) -> Bool {
-        switch (self, route) {
-        case (.login, .login):
-            return true
-        case (.main, .main):
-            return true
-        case (_, _):
-            return false
-        }
-    }
 }
 
 enum AppRouteLight {
@@ -47,9 +36,9 @@ class AppRouter: ObservableObject {
     private func initialize() {
         switch appStorageManager.isUserAuthenticated() {
         case (true):
-            self.appRoute = createRoute(.main)
+            appRoute = createRoute(.main)
         case (false):
-            self.appRoute = createRoute(.login)
+            appRoute = createRoute(.login)
         }
         
         currentRoute = appRoute
@@ -114,6 +103,19 @@ class ViewModelFactory {
             return AuthViewModel(networkService: networkManager, appStorageService: appStorageManager)
         case .main:
             return MainViewModel(appStorageService: appStorageManager)
+        }
+    }
+}
+
+extension AppRoute {
+    func isEqual(_ route: AppRouteLight) -> Bool {
+        switch (self, route) {
+        case (.login, .login):
+            return true
+        case (.main, .main):
+            return true
+        case (_, _):
+            return false
         }
     }
 }

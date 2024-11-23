@@ -19,6 +19,10 @@ final class MainViewModel: ObservableObject, ViewModelable {
     var username: String {
         appStorageService.getUsername() ?? "Default"
     }
+    
+    func logout() {
+        appStorageService.clear()
+    }
 }
 
 @MainActor
